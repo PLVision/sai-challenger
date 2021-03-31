@@ -101,6 +101,10 @@ RUN cd sonic-sairedis \
         && ./autogen.sh && ./configure && make -j4 \
         && make install && ldconfig
 
+# Install PTF itself (last run statement, to avoid full rebuild on ptf update)
+COPY ptf /usr/local/src/ptf
+RUN pip3 install /usr/local/src/ptf
+
 WORKDIR /sai-challenger/tests
 
 CMD ["/usr/bin/supervisord"]

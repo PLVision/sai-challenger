@@ -9,10 +9,6 @@ import signal
 import random
 import unittest
 
-curdir = os.path.dirname(os.path.realpath(__file__))
-ptfdir = os.path.join(curdir, '../ptf/src')
-sys.path.append(ptfdir)
-
 import ptf
 from ptf import config
 import ptf.ptfutils
