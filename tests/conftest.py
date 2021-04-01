@@ -166,13 +166,13 @@ def dataplane_init():
     if platform_name == "nn":
         try:
             import nnpy
-        except Exception:
+        except ImportError:
             sys.exit("Cannot use 'nn' platform if nnpy package is not installed")
 
     platform_mod = None
     try:
         platform_mod = imp.load_module(platform_name, *imp.find_module(platform_name, [config["platform_dir"]]))
-    except Exception:
+    except ImportError:
         logging.warn("Failed to import " + platform_name + " platform module")
         raise
 

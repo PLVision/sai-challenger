@@ -1,8 +1,10 @@
 import json
 
 import pytest
-from ptf.testutils import (send_packet, simple_tcp_packet,
-                           verify_no_packet_any, verify_packets)
+from ptf.testutils import (
+    send_packet, simple_tcp_packet,
+    verify_no_packet_any, verify_packets
+)
 
 from common.switch import Sai, SaiObjType
 
