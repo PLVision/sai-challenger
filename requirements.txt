@@ -1,0 +1,13 @@
+#### begin pypi dependencies ####
+pytest==6.2.2
+redis==3.5.3
+scapy==2.4.4
+#### end pypi dependencies #####
+
+
+#### begin remote dependencies from external repository ####
+
+#packet test framework 
+git+https://github.com/p4lang/ptf.git@362c4c3
+
+#### end remote dependencies from external repository ####
