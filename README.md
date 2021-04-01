@@ -4,7 +4,6 @@ SAI testing and integration framework that is based on SONiC sairedis project.
 ```sh
 git clone https://github.com/PLVision/sai-challenger.git
 cd sai-challenger/
-git submodule update --init --recursive
 ```
 
 ## To run sai-challenger tests on top of vslib SAI implementation
@@ -45,6 +44,20 @@ docker run --name sai-challenger-run \
 	-d sai-challenger
 
 docker exec -ti sai-challenger-run pytest -v
+```
+
+## For ide/linting support create venv and install dependencies from requirements.txt file
+```sh
+
+# create venv
+python3 -m virtualenv .venv
+
+# activate venv
+source .venv/bin/activate
+
+# install dependencies
+python3 -m pip install requirements.txt
+
 ```
 
 ## SAI operation
