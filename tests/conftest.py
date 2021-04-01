@@ -1,18 +1,19 @@
-import logging
-import time
-import pytest
-from common.switch import Sai
-import os
-import sys
 import imp
-import signal
+import logging
+import os
 import random
+import shutil
+import signal
+import sys
+import time
 import unittest
 
 import ptf
-from ptf import config
 import ptf.ptfutils
+import pytest
+from ptf import config
 
+from common.switch import Sai
 
 ##@var DEBUG_LEVELS
 # Map from strings to debugging levels
@@ -108,9 +109,8 @@ def logging_setup(config):
 
     logging.getLogger().setLevel(DEBUG_LEVELS[config["debug"]])
 
-    if config["log_dir"] != None:
+    if config["log_dir"] is not None:
         if os.path.exists(config["log_dir"]):
-            import shutil
             shutil.rmtree(config["log_dir"])
         os.makedirs(config["log_dir"])
     else:
@@ -125,7 +125,7 @@ def pcap_setup(config):
     Set up dataplane packet capturing based on config
     """
 
-    if config["log_dir"] == None:
+    if config["log_dir"] is None:
         filename = os.path.splitext(config["log_file"])[0] + '.pcap'
         ptf.dataplane_instance.start_pcap(filename)
     else:
@@ -166,24 +166,24 @@ def dataplane_init():
     if platform_name == "nn":
         try:
             import nnpy
-        except:
-            die("Cannot use 'nn' platform if nnpy package is not installed")
+        except Exception:
+            sys.exit("Cannot use 'nn' platform if nnpy package is not installed")
 
     platform_mod = None
     try:
         platform_mod = imp.load_module(platform_name, *imp.find_module(platform_name, [config["platform_dir"]]))
-    except:
+    except Exception:
         logging.warn("Failed to import " + platform_name + " platform module")
         raise
 
     try:
         platform_mod.platform_config_update(config)
-    except:
+    except Exception:
         logging.warn("Could not run platform host configuration")
         raise
 
     if config["port_map"] is None:
-        die("Interface port map was not defined by the platform. Exiting.")
+        sys.exit("Interface port map was not defined by the platform. Exiting.")
 
     logging.debug("Configuration: " + str(config))
     logging.info("port map: " + str(config["port_map"]))
@@ -193,7 +193,7 @@ def dataplane_init():
     ptf.testutils.MINSIZE = config['minsize']
 
     if os.getuid() != 0 and not config["allow_user"] and platform_name != "nn":
-        die("Super-user privileges required. Please re-run with sudo or as root.")
+        sys.exit("Super-user privileges required. Please re-run with sudo or as root.")
 
     if config["random_seed"] is not None:
         logging.info("Random seed: %d" % config["random_seed"])
@@ -232,7 +232,7 @@ class DataplaneBase(unittest.TestCase):
     def setUp(self):
         self.dataplane = ptf.dataplane_instance
         self.dataplane.flush()
-        if config["log_dir"] != None:
+        if config["log_dir"] is not None:
             filename = os.path.join(config["log_dir"], str(self)) + ".pcap"
             self.dataplane.start_pcap(filename)
 

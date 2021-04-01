@@ -1,8 +1,10 @@
-from enum import Enum
-import redis
-import time
 import json
 import os
+import time
+from enum import Enum
+
+import redis
+
 
 class SaiObjType(Enum):
     PORT                     =  1

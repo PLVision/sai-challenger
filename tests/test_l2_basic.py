@@ -1,6 +1,8 @@
 import pytest
+from ptf.testutils import (send_packet, simple_tcp_packet,
+                           verify_no_packet_any, verify_packets)
+
 from common.switch import SaiObjType
-from ptf.testutils import simple_tcp_packet, send_packet, verify_packets, verify_no_packet_any
 
 
 def test_l2_access_to_access_vlan(sai, dataplane):
