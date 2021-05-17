@@ -246,16 +246,15 @@ def test_vlan_mbr_get_before_set_attr(sai, dataplane, sai_vlan_member, attr, att
     ]
 )
 def test_vlan_member_set(sai, dataplane, sai_vlan_member, attr, attr_value):
-    if attr == "SAI_VLAN_MEMBER_ATTR_VLAN_TAGGING_MODE":
-        status = sai.set(sai_vlan_member[0], [attr, attr_value], False)
+    status = sai.set(sai_vlan_member[0], [attr, attr_value], False)
 
-        if status == "SAI_STATUS_NOT_SUPPORTED" or status == "SAI_STATUS_ATTR_NOT_SUPPORTED_0":
-            pytest.skip("not supported")
+    if status == "SAI_STATUS_NOT_SUPPORTED" or status == "SAI_STATUS_ATTR_NOT_SUPPORTED_0":
+        pytest.skip("not supported")
 
-        if status == "SAI_STATUS_NOT_IMPLEMENTED" or status == "SAI_STATUS_ATTR_NOT_IMPLEMENTED_0":
-            pytest.skip("not implemented")
+    if status == "SAI_STATUS_NOT_IMPLEMENTED" or status == "SAI_STATUS_ATTR_NOT_IMPLEMENTED_0":
+        pytest.skip("not implemented")
 
-        assert status == "SAI_STATUS_SUCCESS"
+    assert status == "SAI_STATUS_SUCCESS"
 
 
 @pytest.mark.parametrize(
