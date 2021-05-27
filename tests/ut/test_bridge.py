@@ -47,7 +47,6 @@ def test_get_before_set_attr(sai, dataplane, sai_bport_obj, attr, attr_type):
         assert data.value() == sai.sw.port_oids[0]
 
 
-
 @pytest.mark.parametrize(
     "attr,attr_value",
     [
