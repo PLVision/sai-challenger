@@ -73,6 +73,51 @@ TODO: Sai.cleanup() methods should be fixed to be able to run SAI Challenger TCs
 ```
 
 
+## To install SAI Challenger client to host and SAI Challenger server to device using vslib
+
+To simply build client/server containers, deploy server container to device and prepare device for testing use:
+
+```sh
+	./installer.sh <management ip of device> <username> <password> install
+
+```
+
+This command will make next steps:
+ * Build SAI Challenger client docker image.
+ * Build SAI Challenger server docker image.
+ * Create SAI Challenger client docker container.
+ * Save SAI Challenger server docker image to file and copy to device.
+ * Load SAI Challenger server docker image from file on device.
+ * Generate files to run SAI Challenger server on device as service.
+ * Make copy of /etc/sonic/generated_services.conf on device and put in origin file only service of SAI Challenger server.
+ * Reboot the device.
+ 
+ After every reboot you will have only one service running on it - SAI Challenger server.
+ 
+ After installation, to run SAI Challenger client container use:
+
+```sh
+	docker start sai-challenger
+
+```
+
+ Then, to run tests use:
+ 
+```sh
+	docker exec -ti sai-challenger pytest --sai-server=<management ip of device> -v
+
+```
+
+ After, to restore device use:
+
+```sh
+	./installer.sh <management ip of device> <username> <password> remove
+```
+
+This command will remove service files, restore /etc/sonic/generated_services.conf and reboot device.
+Afrer reboot device will work like beforre you install SAI Challenger server.
+
+
 ## To run SAI Challenger tests on top of vendor-specific SAI implementation
 
 Copy Debian package with SAI library into sai-challenger/ folder.
