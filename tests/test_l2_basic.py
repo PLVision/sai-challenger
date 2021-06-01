@@ -19,7 +19,7 @@ def test_l2_access_to_access_vlan(sai, dataplane):
         sai.create_fdb(vlan_oid, macs[idx], sai.sw.dot1q_bp_oids[idx])
 
     try:
-        if not sai.libsaivs:
+        if sai.run_traffic:
             pkt = simple_tcp_packet(eth_dst=macs[1],
                                     eth_src=macs[0],
                                     ip_dst='10.0.0.1',
@@ -49,7 +49,7 @@ def test_l2_trunk_to_trunk_vlan(sai, dataplane):
     sai.create_fdb(vlan_oid, macs[1], sai.sw.dot1q_bp_oids[1])
 
     try:
-        if not sai.libsaivs:
+        if sai.run_traffic:
             pkt = simple_tcp_packet(eth_dst=macs[1],
                                     eth_src=macs[0],
                                     dl_vlan_enable=True,
@@ -83,7 +83,7 @@ def test_l2_access_to_trunk_vlan(sai, dataplane):
         sai.create_fdb(vlan_oid, macs[idx], sai.sw.dot1q_bp_oids[idx])
 
     try:
-        if not sai.libsaivs:
+        if sai.run_traffic:
             pkt = simple_tcp_packet(eth_dst=macs[1],
                                     eth_src=macs[0],
                                     ip_dst='10.0.0.1',
@@ -122,7 +122,7 @@ def test_l2_trunk_to_access_vlan(sai, dataplane):
         sai.create_fdb(vlan_oid, macs[idx], sai.sw.dot1q_bp_oids[idx])
 
     try:
-        if not sai.libsaivs:
+        if sai.run_traffic:
             pkt = simple_tcp_packet(eth_dst=macs[1],
                                     eth_src=macs[0],
                                     ip_dst='10.0.0.1',
@@ -161,7 +161,7 @@ def test_l2_flood(sai, dataplane):
         sai.set(sai.sw.port_oids[idx], ["SAI_PORT_ATTR_PORT_VLAN_ID", vlan_id])
 
     try:
-        if not sai.libsaivs:
+        if sai.run_traffic:
             pkt = simple_tcp_packet(eth_dst=macs[1],
                                     eth_src=macs[0],
                                     ip_dst='10.0.0.1',
@@ -184,20 +184,25 @@ def test_l2_flood(sai, dataplane):
 
 def test_l2_lag(sai, dataplane):
     vlan_id = "10"
-    macs = ['00:11:11:11:11:11', '00:22:22:22:22:22']
+    vlan_id_hw = '400'
+    macs = ['00:11:11:11:11:11', '00:22:22:22:22:22', '00:44:44:44:44:44', '00:55:55:55:55:55']
     max_port = 3
+    ports_hw = [4, 5]
     lag_mbr_oids = []
+    lag_mbr_oids_hw = []
 
     # Remove bridge ports
     for idx in range(max_port):
         sai.remove_vlan_member(sai.sw.default_vlan_oid, sai.sw.dot1q_bp_oids[idx])
         sai.remove(sai.sw.dot1q_bp_oids[idx])
 
-    # Remove Port #3 from the default VLAN
+    # Remove Port #3 and Port #4 from the default VLAN
     sai.remove_vlan_member(sai.sw.default_vlan_oid, sai.sw.dot1q_bp_oids[3])
+    sai.remove_vlan_member(sai.sw.default_vlan_oid, sai.sw.dot1q_bp_oids[4])
 
-    # Create LAG
+    # Create two LAGs
     lag_oid = sai.create(SaiObjType.LAG, [])
+    lag_oid_hw = sai.create(SaiObjType.LAG, [])
 
     # Create LAG members
     for idx in range(max_port):
@@ -208,6 +213,15 @@ def test_l2_lag(sai, dataplane):
                          ])
         lag_mbr_oids.append(oid)
 
+    # Create LAG members for homework
+    for idx in ports_hw:
+        oid_hw = sai.create(SaiObjType.LAG_MEMBER,
+                         [
+                             "SAI_LAG_MEMBER_ATTR_LAG_ID", lag_oid_hw,
+                             "SAI_LAG_MEMBER_ATTR_PORT_ID", sai.sw.port_oids[idx]
+                         ])
+        lag_mbr_oids_hw.append(oid_hw)
+
     # Create bridge port for LAG
     lag_bp_oid = sai.create(SaiObjType.BRIDGE_PORT,
                             [
@@ -217,12 +231,27 @@ def test_l2_lag(sai, dataplane):
                                 "SAI_BRIDGE_PORT_ATTR_ADMIN_STATE", "true"
                             ])
 
+    # Create bridge port for LAG for homework
+    lag_bp_oid_hw = sai.create(SaiObjType.BRIDGE_PORT,
+                            [
+                                "SAI_BRIDGE_PORT_ATTR_TYPE", "SAI_BRIDGE_PORT_TYPE_PORT",
+                                "SAI_BRIDGE_PORT_ATTR_PORT_ID", lag_oid_hw,
+                                "SAI_BRIDGE_PORT_ATTR_ADMIN_STATE", "true"
+                            ])
+
     # Create VLAN
     vlan_oid = sai.create(SaiObjType.VLAN, ["SAI_VLAN_ATTR_VLAN_ID", vlan_id])
+
+    # Create VLAN for homework
+    vlan_oid_hw = sai.create(SaiObjType.VLAN, ["SAI_VLAN_ATTR_VLAN_ID", vlan_id_hw])
 
     # Create VLAN members
     sai.create_vlan_member(vlan_oid, lag_bp_oid, "SAI_VLAN_TAGGING_MODE_UNTAGGED")
     sai.create_vlan_member(vlan_oid, sai.sw.dot1q_bp_oids[3], "SAI_VLAN_TAGGING_MODE_UNTAGGED")
+
+    # Create VLAN members for homework
+    sai.create_vlan_member(vlan_oid_hw, lag_bp_oid_hw, "SAI_VLAN_TAGGING_MODE_UNTAGGED")
+    sai.create_vlan_member(vlan_oid_hw, sai.sw.dot1q_bp_oids[4], "SAI_VLAN_TAGGING_MODE_UNTAGGED")
 
     # Set PVID for LAG and Port #3
     sai.set(sai.sw.port_oids[3], ["SAI_PORT_ATTR_PORT_VLAN_ID", vlan_id])
@@ -231,11 +260,19 @@ def test_l2_lag(sai, dataplane):
     sai.create_fdb(vlan_oid, macs[0], lag_bp_oid)
     sai.create_fdb(vlan_oid, macs[1], sai.sw.dot1q_bp_oids[3])
 
+    # Set PVID for LAG and Port #4 for homework
+    sai.set(sai.sw.port_oids[4], ["SAI_PORT_ATTR_PORT_VLAN_ID", vlan_id_hw])
+    sai.set(lag_oid_hw, ["SAI_LAG_ATTR_PORT_VLAN_ID", vlan_id_hw])
+
+    sai.create_fdb(vlan_oid_hw, macs[2], lag_bp_oid_hw)
+    sai.create_fdb(vlan_oid_hw, macs[3], sai.sw.dot1q_bp_oids[4])
+
     try:
-        if not sai.libsaivs:
+        if sai.run_traffic:
             count = [0, 0, 0]
             dst_ip = int(socket.inet_aton('10.10.10.1').encode('hex'),16)
             max_itrs = 200
+
             for i in range(0, max_itrs):
                 dst_ip_addr = socket.inet_ntoa(hex(dst_ip)[2:].zfill(8).decode('hex'))
                 pkt = simple_tcp_packet(eth_dst=macs[0],
@@ -268,6 +305,7 @@ def test_l2_lag(sai, dataplane):
             print("Sending packet port 3 (lag member) -> port 4")
             send_packet(dataplane, 2, str(pkt))
             verify_packets(dataplane, pkt, [3])
+
     finally:
         sai.remove_fdb(vlan_oid, macs[0])
         sai.remove_fdb(vlan_oid, macs[1])
@@ -281,6 +319,19 @@ def test_l2_lag(sai, dataplane):
 
         sai.remove(lag_bp_oid)
         sai.remove(lag_oid)
+
+        sai.remove_fdb(vlan_oid_hw, macs[2])
+        sai.remove_fdb(vlan_oid_hw, macs[3])
+
+        sai.remove_vlan_member(vlan_oid_hw, lag_bp_oid_hw)
+        sai.remove_vlan_member(vlan_oid_hw, sai.sw.dot1q_bp_oids[4])
+        sai.remove(vlan_oid_hw)
+
+        for oid_hw in lag_mbr_oids_hw:
+            sai.remove(oid_hw)
+
+        sai.remove(lag_bp_oid_hw)
+        sai.remove(lag_oid_hw)
 
         # Create bridge port for ports removed from LAG
         for idx in range(max_port):
@@ -301,7 +352,6 @@ def test_l2_lag(sai, dataplane):
         for oid in sai.sw.port_oids[0:4]:
             sai.set(oid, ["SAI_PORT_ATTR_PORT_VLAN_ID", sai.sw.default_vlan_id])
 
-
 def test_l2_vlan_bcast_ucast(sai, dataplane):
     vlan_id = "10"
     macs = []
@@ -318,7 +368,7 @@ def test_l2_vlan_bcast_ucast(sai, dataplane):
         sai.create_fdb(vlan_oid, macs[idx], bp_oid)
 
     try:
-        if not sai.libsaivs:
+        if sai.run_traffic:
             bcast_pkt = simple_tcp_packet(eth_dst='ff:ff:ff:ff:ff:ff',
                                           eth_src='00:00:00:00:00:01',
                                           ip_dst='10.0.0.1',
@@ -375,7 +425,7 @@ def test_l2_mtu(sai, dataplane):
         sai.set(oid, ["SAI_PORT_ATTR_PORT_VLAN_ID", vlan_id])
 
     try:
-        if not sai.libsaivs:
+        if sai.run_traffic:
             pkt = simple_tcp_packet(pktlen=1400,
                                     eth_dst='00:22:22:22:22:22',
                                     eth_src='00:11:11:11:11:11',
