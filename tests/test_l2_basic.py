@@ -506,37 +506,15 @@ def test_fdb_bulk_remove(npu, dataplane):
 
     finally:
         npu.flush_fdb_entries(["SAI_FDB_FLUSH_ATTR_BV_ID", npu.default_vlan_oid])
-def test_l2_mac_move_1(npu, dataplane):
-    '''
-    Description:
-    Create VLAN, e.g. 100 and add member ports 1, 2 and 3. Send packet on port 1 with
-    src_mac=MAC1 and dst_mac= MAC2. Verify MAC1 is learnt on port 1 and packet is flooded
-    to other member ports (2 and 3 in this example). Send packet on port 2 with src_mac=MAC2
-    and dst_mac= MAC1. Verify MAC2 is learnt on port 2. After learning, verify that packet
-    from port 1 is only forwarded to port 2 and not to port 3. Repeat the test by sending
-    same packet (src_mac=MAC2 and dst_mac= MAC1), on port 3. Verify that stationmovement
-    occurred and MAC2 is learnt on port 3. Packet from port 1 destined to MAC2 must be forwarded
-    to port 3 and not to port 2 after the MAC-movement.
-    Steps:
-    1. Create VLAN 100 and associate 3 untagged ports (port 1,2,3) as the member port of VLAN 100.
-    2. Set attribute value of "Port VLAN ID 100" for the ports 1, 2, 3
-    3. Send packet from port 1 with src_mac=MAC1 and dst_mac= MAC2
-    4. Send packet from port 2 with src_mac=MAC2 and dst_mac= MAC1.
-    5. After MAC learning, repeat step 3 and verify that packet from port 1 is only forwarded to port 2 and not to port 3.
-    6. Send packet (src_mac=MAC2 and dst_mac= MAC1) on port 3
-    7. Send packet (src_mac=MAC1 and dst_mac=MAC2) from port 1.
-    8. Clean up by remove the vlan members and the VLAN from the database.
-    '''
-    print('L2 Mac Move test on Access ports 1,2 and 3')
 
+        
+def test_l2_mac_move_1(npu, dataplane):
     vlan_id = "100"
     macs = ['00:11:11:11:11:11', '00:22:22:22:22:22']
     max_port = 3
     vlan_mbr_oids = []
-    ### create vlan
     vlan_oid = npu.create(SaiObjType.VLAN, ["SAI_VLAN_ATTR_VLAN_ID", vlan_id])
 
-    ### create vlan membership with ports
     for idx in range(max_port):
         npu.remove_vlan_member(npu.default_vlan_oid, npu.dot1q_bp_oids[idx])
         vlan_mbr = npu.create_vlan_member(vlan_oid, npu.dot1q_bp_oids[idx], "SAI_VLAN_TAGGING_MODE_UNTAGGED")
@@ -545,6 +523,7 @@ def test_l2_mac_move_1(npu, dataplane):
     
     try:
         if npu.run_traffic:
+        
             pkt1 = simple_tcp_packet(eth_dst=macs[1],
                                      eth_src=macs[0],
                                      ip_dst='192.168.0.2',
@@ -558,56 +537,34 @@ def test_l2_mac_move_1(npu, dataplane):
                                      ip_src='192.168.0.2',
                                      ip_id=105,
                                      ip_ttl=64)
-                  
-            send_packet(dataplane, 0, pkt)
-            verify_packets(dataplane, pkt, [1])
-
-            ### Sending packet from Port1
             send_packet(dataplane, 0, pkt1)
-
-            ### verify the packet @ Port2 and Port3
             verify_packets(dataplane, pkt1, [1, 2])
 
-            ### Sending packet from Port2
             send_packet(dataplane, 1, pkt2)
-
-            ### verify the packet @ Port1
             verify_packets(dataplane, pkt2, [0])
 
             time.sleep(1)
 
-            ### Sending packet from Port1
             send_packet(dataplane, 0, pkt1)
-
-            ### verify the packet @ Port2
             verify_packets(dataplane, pkt1, [1])
-
-            ### verify no packet @ Port3
             verify_no_packet(dataplane, pkt1, 2)
 
             time.sleep(1)
 
-            ### Send packet (src_mac=MAC2 and dst_mac= MAC1) on port3
             send_packet(dataplane, 2, pkt2)
-
-            ### verify the packet @ Port1
             verify_packets(dataplane, pkt2, [0])
 
             time.sleep(1)
 
-            ### Send packet (src_mac=MAC1 and dst_mac=MAC2) from port 1
             send_packet(dataplane, 0, pkt1)
-
-            ### verify the packet @ Port3 & no packet @ Port2
             verify_packets(dataplane, pkt1, [2])
             verify_no_packet(dataplane, pkt1, 1)
    
     finally:
-        ### Assign ports into default vlan and remove vlan membership from ports
+        npu.flush_fdb_entries(["SAI_FDB_FLUSH_ATTR_BV_ID", vlan_oid])
         for idx in range(max_port):
             npu.remove(vlan_mbr_oids[idx])
             npu.create_vlan_member(npu.default_vlan_oid, npu.dot1q_bp_oids[idx], "SAI_VLAN_TAGGING_MODE_UNTAGGED")
             npu.set(npu.port_oids[idx], ["SAI_PORT_ATTR_PORT_VLAN_ID", npu.default_vlan_id])
         
-        ### remove valn
         npu.remove(vlan_oid)
