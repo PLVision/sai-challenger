@@ -282,9 +282,10 @@ class Sai:
             vid = self.alloc_vid(obj)
             obj = "SAI_OBJECT_TYPE_" + obj.name + ":" + vid
         else:
-            # NOTE: sai_deserialize_route_entry is copy from SAI/meta auto generated serialization
-            # but since previously used json.hpp, then order of serialized item is different.
+            # NOTE: The sai_deserialize_route_entry() from sonic-sairedis does not tolerate
+            # spaces in the route entry key:
             # {"dest":"0.0.0.0/0","switch_id":"oid:0x21000000000000","vr":"oid:0x3000000000022"}
+            # For more details, please refer to sai_deserialize_route_entry() implementation.
             obj = obj.replace(" ", "")
         if type(attrs) != str:
             attrs = json.dumps(attrs)
