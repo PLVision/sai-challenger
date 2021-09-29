@@ -2,7 +2,7 @@ import time
 import ipaddress
 import pytest
 from common.sai import SaiObjType
-from ptf.src.ptf.testutils import simple_tcp_packet, send_packet, verify_packets, verify_packet, verify_no_packet_any, \
+from ptf.testutils import simple_tcp_packet, send_packet, verify_packets, verify_packet, verify_no_packet_any, \
     verify_no_packet, verify_any_packet_any_port, verify_each_packet_on_each_port
 
 
