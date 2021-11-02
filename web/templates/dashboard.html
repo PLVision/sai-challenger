@@ -1,0 +1,20 @@
+$def with (title, attrs)
+<div class="row">
+    $for attr in attrs:
+    <!-- new card -->
+    <div class="col-md-4">
+        <div class="card mb-4 shadow-sm">
+            <div class="card-body">
+                <h4>$attr['name'].replace('SAI_OBJECT_TYPE_','')</h4>
+                <p class="card-text"></p>
+                <div class="d-flex justify-content-between align-items-center">
+                    <div class="btn-group">
+                        <a class="btn btn-sm btn-outline-info links" type="button" href="/attributes/$attr['name']/">Attributes</a>
+                        <a class="btn btn-sm btn-outline-warning links" type="button" href="/objects/$attr['name']/">All Data</a>
+                    </div>
+                    <small class="text-muted">-</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

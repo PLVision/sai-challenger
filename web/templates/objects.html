@@ -1,0 +1,52 @@
+$def with (title, name, fields)
+<div class="row">
+  <p class="primary" id="title">$title</p>
+</div>
+<div class="row">
+  <div class="col-md-12 col-lg-12">
+    <div>
+      <table data-url="/data/objects/$name/" data-detail-view-icon="true" data-fixed-columns="true" data-fixed-number="1"
+        class="table table-dark table-striped table-bordered small" id="example"
+        style="width: 100%; min-height: 320px;">
+        <thead>
+          <tr>
+            <th data-field="name">Name</th>
+            $for idx in range(1, len(fields)):
+            <th data-field="$fields[idx]" data-formatter="detailFormatter">$fields[idx]</th>
+          </tr>
+        </thead>
+      </table>
+    </div>
+  </div>
+</div>
+<script>
+  $$(document).ready(() => {
+    $$("#example").bootstrapTable();
+  });
+
+  function detailFormatter(value, item, row, column) {
+    let html = [value];
+    let elements = [value];
+
+    switch (item.type) {
+      case 'sai_object_list_t':
+        let tmp = value.split(',');
+        tmp[0] = tmp[0].substring(tmp[0].indexOf(':') + 1);
+        elements = tmp;
+      case 'sai_object_id_t':
+        html = []
+        let href = encodeURI(`/objects/$${item.objs}/`);
+        html.push(`<a href="$${href}">ALL</a><br/>`);
+
+        elements.forEach(e => {
+          href = encodeURI(`/objects/$${item.objs}/$${e}/`);
+          html.push(`<a href="$${href}">$${e}</a><br/>`);
+        });
+        break;
+
+      default:
+        break;
+    }
+    return html.join('');
+  }
+</script>

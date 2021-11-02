@@ -1,0 +1,25 @@
+$def with (title, attribute)
+<div class="row">
+  <p>$title</p>
+</div>
+<div class="row">
+  <div class="col-md-12 col-lg-12">
+    <table class="table table-dark table-striped table-bordered" id="saiAttributesTable" style="width: 100%">
+      <thead>
+        <tr>
+          <td>Name</td>
+          <td>Type</td>
+          <td>Flags</td>
+        </tr>
+      </thead>
+      <tbody>
+        $for attr in attribute['attributes']:
+          <tr>
+            <td>$attr['name']</td>
+            <td>$attr['properties']['type']</td>
+            <td>$' | '.join(attr['properties']['flags'])</td>
+          </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

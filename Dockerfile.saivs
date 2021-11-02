@@ -82,6 +82,9 @@ RUN pip3 install scapy
 RUN pip3 install click==7.0
 RUN echo ". /sai-challenger/scripts/sai-cli-completion.sh" >> /root/.bashrc
 
+# Install SAI Challenger WEB dependences
+RUN pip3 install web.py==0.62
+
 # Update Redis configuration:
 # - Enable keyspace notifications as per sonic-swss-common/README.md
 # - Do not daemonize redis-server since supervisord will manage it
