@@ -164,11 +164,12 @@ def dump(oid):
         return False
 
     try:
-        f = open("/etc/sai/sai.json", "r")
+        path = "/etc/sai/sai.json"
+        f = open(path, "r")
         sai_str = f.read()
         sai_json = json.loads(sai_str)
     except IOError:
-        click.echo("Error: File does not appear to exist\n")
+        click.echo("Error: Can not open {}\n".format(path))
         return False
 
     sai = SaiNpu(exec_params)
