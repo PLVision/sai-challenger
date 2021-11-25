@@ -1,6 +1,8 @@
 #!/usr/bin/python3
 
 import click
+import json
+
 from sai import SaiObjType
 from sai_npu import SaiNpu
 
@@ -149,6 +151,39 @@ def list(obj_type):
         for idx, oid in enumerate(oids):
             click.echo("{:>8})  {}".format(idx + 1, oid))
         click.echo()
+
+
+# 'dump' command
+@cli.command()
+@click.argument('oid', metavar='<oid>', required=True, type=str)
+def dump(oid):
+    """ List SAI object's attribute value"""
+    click.echo()
+    if not oid.startswith("oid:"):
+        click.echo("SAI object ID must start with 'oid:' prefix\n")
+        return False
+
+    try:
+        f = open("/etc/sai/sai.json", "r")
+        sai_str = f.read()
+        sai_json = json.loads(sai_str)
+    except IOError:
+        click.echo("Error: File does not appear to exist\n")
+        return False
+
+    sai = SaiNpu(exec_params)
+    obj_type = sai.vid_to_type(oid)
+
+    for item in sai_json:
+        if obj_type in item.values():
+            for attr in item['attributes']:
+                status, data = sai.get_by_type(oid, attr['name'], attr['properties']['type'], False)
+                if status == "SAI_STATUS_SUCCESS":
+                    data = data.to_json()
+                    click.echo("{:<50} {}".format(data[0], data[1]))
+                else:
+                    click.echo("{:<50} {}".format(attr['name'], status))
+    click.echo()
 
 
 @cli.group()
