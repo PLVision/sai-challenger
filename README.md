@@ -1,4 +1,19 @@
 # SAI Challenger
+
+&nbsp;
+&nbsp;
+
+---
+**WARNING**
+
+The project has been migrated to OCP Github:\
+https://github.com/opencomputeproject/SAI-Challenger
+
+---
+
+&nbsp;
+&nbsp;
+
 SAI testing and integration framework that is based on SONiC sairedis project.
 
 <a href="url"><img src="img/sai-challenger.png" align="center" width="350" ></a>
